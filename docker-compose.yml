@@ -2,7 +2,9 @@ version: "3.9"
 
 services:
   logger:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: temp_hum_logger
     environment:
       SERIAL_PORT: socket://host.docker.internal:7000
@@ -10,3 +12,15 @@ services:
       CSV_PATH: /data/measurements.csv
     volumes:
       - ./csv_out:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: temp_webserver
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./csv_out:/app/csv_out
+      - ./templates:/app/templates
+      - ./static:/app/static

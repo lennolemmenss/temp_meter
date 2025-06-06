@@ -14,7 +14,6 @@ echo "socat started with PID $SOCAT_PID (logging to $SOCAT_LOG)"
 sleep 5
 
 echo "Starting Docker Compose..."
-docker compose up -d
+docker compose up -d --build
 
-echo "Tailing CSV output (Ctrl+C to exit):"
-tail -f csv_out/measurements.csv
+echo "Docker services started. View logs with: docker logs -f temp_hum_logger"

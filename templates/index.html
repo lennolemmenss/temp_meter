@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Sensor Dashboard</title>
+  <link href="/static/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 p-6">
+  <div class="max-w-2xl mx-auto bg-white shadow rounded-xl p-6 space-y-4">
+    <h1 class="text-2xl font-bold mb-2">Live Temperature & Humidity</h1>
+    <div id="live" class="text-lg">
+      <p><strong>Time:</strong> <span id="time">--</span></p>
+      <p><strong>Temperature:</strong> <span id="temp">--</span> °C</p>
+      <p><strong>Humidity:</strong> <span id="hum">--</span> %</p>
+    </div>
+
+    <h2 class="text-xl font-semibold mt-4">Statistics</h2>
+    <div id="stats" class="grid grid-cols-2 gap-4 text-sm">
+      <div><strong>Avg Temp:</strong> <span id="avg_temp">--</span> °C</div>
+      <div><strong>Avg Hum:</strong> <span id="avg_hum">--</span> %</div>
+      <div><strong>Min Temp:</strong> <span id="min_temp">--</span> °C</div>
+      <div><strong>Min Hum:</strong> <span id="min_hum">--</span> %</div>
+      <div><strong>Max Temp:</strong> <span id="max_temp">--</span> °C</div>
+      <div><strong>Max Hum:</strong> <span id="max_hum">--</span> %</div>
+    </div>
+  </div>
+
+<script>
+  function startWebSocket() {
+    const ws = new WebSocket("ws://" + window.location.host + "/ws");
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      document.getElementById("time").textContent = data.timestamp;
+      document.getElementById("temp").textContent = data.temperature;
+      document.getElementById("hum").textContent = data.humidity;
+      document.getElementById("avg_temp").textContent = data.avg_temp;
+      document.getElementById("avg_hum").textContent = data.avg_hum;
+      document.getElementById("min_temp").textContent = data.min_temp;
+      document.getElementById("min_hum").textContent = data.min_hum;
+      document.getElementById("max_temp").textContent = data.max_temp;
+      document.getElementById("max_hum").textContent = data.max_hum;
+    };
+
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
+    };
+
+    ws.onclose = () => {
+      console.warn("WebSocket closed, retrying in 2s...");
+      setTimeout(startWebSocket, 2000);
+    };
+  }
+
+  // Start connection on page load
+  window.onload = startWebSocket;
+</script>
+
+</body>
+</html>

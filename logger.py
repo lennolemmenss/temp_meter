@@ -1,21 +1,30 @@
-import csv, os, serial, time, datetime, pathlib
+import csv
+import os
+import serial
+import time
+import datetime
+import pathlib
 from zoneinfo import ZoneInfo
 
-PORT      = os.getenv("SERIAL_PORT", "/dev/ttyACM0")
-BAUD      = int(os.getenv("SERIAL_BAUD", "9600"))
-CSV_PATH  = pathlib.Path(os.getenv("CSV_PATH", "/data/measurements.csv"))
+PORT = os.getenv("SERIAL_PORT", "/dev/ttyACM0")
+BAUD = int(os.getenv("SERIAL_BAUD", "9600"))
+CSV_PATH = pathlib.Path(os.getenv("CSV_PATH", "/data/measurements.csv"))
 
 ser = serial.serial_for_url(PORT, baudrate=BAUD, timeout=5)
 
 CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
-new_file = not CSV_PATH.exists()
 
 brussels_tz = ZoneInfo("Europe/Brussels")
 
-with CSV_PATH.open("a", newline="") as f:
+with CSV_PATH.open("a+", newline="") as f:
+    f.seek(0)
+    is_empty = f.tell() == 0 or f.read(1) == ''
+    f.seek(0, 2)  # move back to end of file for appending
+
     writer = csv.writer(f)
-    if new_file:
+    if is_empty:
         writer.writerow(["timestamp_brussels", "temperature_C", "humidity_%"])
+
     while True:
         line = ser.readline().decode().strip()
         if not line:
